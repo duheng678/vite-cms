@@ -11,10 +11,10 @@
           <template #label>
             <div class="label">
               <el-icon><UserFilled /></el-icon>
-              <span class="text">帐号登录</span>
+              <span class="text">帐号</span>
             </div>
           </template>
-          <!-- <pane-account ref="accountRef" /> -->
+          <pane-account ref="accountRef" />
         </el-tab-pane>
 
         <!-- 2.手机登录的Pane -->
@@ -42,17 +42,19 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 
-// import PaneAccount from './pane-account.vue'
+import PaneAccount from './pane-account.vue'
 import PanePhone from './pane-phone.vue'
 
 const activeName = ref('account')
 const isRemPwd = ref(false)
+const accountRef = ref<InstanceType<typeof PaneAccount>>()
 
-watch(activeName, (val) => {
-  console.log(val)
-})
 const handleLoginBtnClick = () => {
-  console.log('hh')
+  if (activeName.value === 'account') {
+    accountRef.value?.loginAction()
+  } else {
+    console.log('phone')
+  }
 }
 </script>
 
