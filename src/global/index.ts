@@ -1,3 +1,2 @@
-import * as registerIcons from './register-icons'
-
-export { registerIcons }
+export * from './register-icons'
+export * from './constants'

@@ -13,15 +13,18 @@
 
 <script setup lang="ts">
 import { reactive, ref, defineExpose } from 'vue'
-import type { ElForm, FormInstance, FormRules } from 'element-plus'
+import type { ElForm, FormRules } from 'element-plus'
 import { ElMessage } from 'element-plus'
 
 import useLoginStore from '@/store/login/login'
 import type { IAccount } from '@/types'
+import { localCache } from '@/utils'
+import { CACHE_NAME } from '@/global'
+const CACHE_PASSWORD = 'password'
 
 const account = reactive<IAccount>({
-  name: '',
-  password: '',
+  name: localCache.getCache(CACHE_NAME) ?? '',
+  password: localCache.getCache(CACHE_PASSWORD) ?? '',
 })
 // 2.定义校验规则
 const accountRules: FormRules = {
@@ -45,16 +48,32 @@ const accountRules: FormRules = {
 // 3.执行登录逻辑
 const formRef = ref<InstanceType<typeof ElForm>>()
 const loginStore = useLoginStore()
-function loginAction() {
+function loginAction(isRemPwd: boolean) {
   console.log('login')
   formRef.value?.validate((valid) => {
     if (valid) {
       const name = account.name
       const password = account.password
 
-      loginStore.loginAccountAction({ name, password })
+      loginStore
+        .loginAccountAction({ name, password })
+        .then((res) => {
+          if (res === 'error') {
+            ElMessage.error('账号密码错误~~')
+            return
+          }
 
-      ElMessage.success('登录成功')
+          if (isRemPwd) {
+            localCache.setCache(CACHE_NAME, name)
+            localCache.setCache(CACHE_PASSWORD, password)
+          } else {
+            localCache.removeCache(CACHE_NAME)
+            localCache.removeCache(CACHE_PASSWORD)
+          }
+        })
+        .catch((err) => {
+          console.log(err)
+        })
     } else {
       ElMessage.error('请您输入正确的格式后再操作~~')
     }

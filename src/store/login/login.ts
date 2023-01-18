@@ -1,22 +1,35 @@
 import { defineStore } from 'pinia'
-import { accountLoginRequest } from '@/service/login/login'
+import { accountLoginRequest, getUserInfoById, getUserMenusByRoleId } from '@/service/login/login'
 import type { IAccount } from '@/types'
 import { localCache } from '@/utils/cache'
-
-const LOGIN_TOKEN = 'login/token'
+import router from '@/router'
+import { LOGIN_TOKEN } from '@/global'
 const USER_NAME = 'user/name'
 
+interface ILoginState {
+  token: string
+  id: string
+  name: string
+  userInfo: any
+  userMenus: any
+}
+
 const useLoginStore = defineStore('login', {
-  state: () => ({
+  state: (): ILoginState => ({
     id: '',
     name: localCache.getCache(USER_NAME) ?? '',
     token: localCache.getCache(LOGIN_TOKEN) ?? '',
+    userInfo: localCache.getCache('userInfo') ?? {},
+    userMenus: localCache.getCache('userMenus') ?? {},
   }),
   getters: {},
   actions: {
+    //登陆逻辑
     async loginAccountAction(account: IAccount) {
-      console.log('h')
       const loginRes = await accountLoginRequest(account)
+      // 登陆失败 返回
+      if (!loginRes?.data) return 'error'
+
       // 保存在store
       this.id = loginRes?.data.id
       this.name = loginRes?.data.name
@@ -24,7 +37,32 @@ const useLoginStore = defineStore('login', {
       // 保存在本地缓存
       localCache.setCache(LOGIN_TOKEN, this.token)
       localCache.setCache(USER_NAME, this.name)
-      console.log(this.id, this.name, this.token)
+      // 请求用户信息
+      const userInfo = await getUserInfoById(Number(this.id))
+      console.log(userInfo)
+      this.userInfo = userInfo
+      localCache.setCache('userInfo', userInfo)
+
+      // 请求用户菜单
+      const userMenus = await getUserMenusByRoleId(this.userInfo.role.id)
+      this.userMenus = userMenus
+      localCache.setCache('userMenus', userMenus)
+
+      // 跳转路由
+      router.push('/')
+    },
+    // 将本地数据给store
+    loadLocalCacheAction() {
+      const username = localCache.getCache(USER_NAME)
+      const token = localCache.getCache(LOGIN_TOKEN)
+      const userInfo = localCache.getCache('userInfo')
+      const userMenus = localCache.getCache('userMenus')
+      if (username && token && userInfo && userMenus) {
+        this.name = username
+        this.token = token
+        this.userInfo = userInfo
+        this.userMenus = userMenus
+      }
     },
   },
 })

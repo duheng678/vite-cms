@@ -1,19 +1,62 @@
 <template>
   <div class="main">
-    <div>main:{{ counterStore.counter }}-{{ counterStore.doubleCounter }}.</div>
-    <button @click="changeCounter">改变counter</button>
+    <el-container class="main-content">
+      <el-aside width="200px">
+        <main-menu></main-menu>
+      </el-aside>
+
+      <el-container>
+        <el-header height="50px">
+          <main-header></main-header>
+        </el-header>
+        <el-main> <router-view></router-view></el-main>
+      </el-container>
+    </el-container>
   </div>
 </template>
 
 <script setup lang="ts">
-import useCounterStore from '@/store/counter'
-const counterStore = useCounterStore()
+import { useRouter } from 'vue-router'
+import { localCache } from '@/utils'
+import { LOGIN_TOKEN } from '@/global'
+
+import MainMenu from '@/components/main-menu'
+import MainHeader from '@/components/main-header'
+
+const router = useRouter()
 const changeCounter = () => {
-  counterStore.changeCounterAction(999)
+  localCache.removeCache(LOGIN_TOKEN)
+  router.push('/login')
 }
 </script>
 
 <style scoped lang="less">
 .main {
+  height: 100%;
+}
+
+.main-content {
+  height: 100%;
+
+  .el-aside {
+    overflow-x: hidden;
+    overflow-y: auto;
+    line-height: 200px;
+    text-align: left;
+    cursor: pointer;
+    background-color: #001529;
+    scrollbar-width: none; /* firefox */
+    -ms-overflow-style: none; /* IE 10+ */
+
+    transition: width 0.3s ease;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
+
+  .el-main {
+    background-color: #f0f2f5;
+  }
 }
 </style>

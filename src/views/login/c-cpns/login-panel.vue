@@ -40,18 +40,25 @@
 </template>
 
 <script setup lang="ts">
+import { localCache } from '@/utils'
 import { ref, watch } from 'vue'
+import { CACHE_NAME } from '@/global'
 
 import PaneAccount from './pane-account.vue'
 import PanePhone from './pane-phone.vue'
 
 const activeName = ref('account')
 const isRemPwd = ref(false)
-const accountRef = ref<InstanceType<typeof PaneAccount>>()
+const remStatus = localCache.getCache(CACHE_NAME)
+if (remStatus) {
+  isRemPwd.value = true
+}
 
+const accountRef = ref<InstanceType<typeof PaneAccount>>()
+//点击立即登陆
 const handleLoginBtnClick = () => {
   if (activeName.value === 'account') {
-    accountRef.value?.loginAction()
+    accountRef.value?.loginAction(isRemPwd.value)
   } else {
     console.log('phone')
   }
