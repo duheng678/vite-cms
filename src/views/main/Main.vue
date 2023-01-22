@@ -1,13 +1,13 @@
 <template>
   <div class="main">
     <el-container class="main-content">
-      <el-aside width="200px">
-        <main-menu></main-menu>
+      <el-aside :width="isFold ? '65px' : '210px'">
+        <main-menu :isFold="isFold"></main-menu>
       </el-aside>
 
       <el-container>
         <el-header height="50px">
-          <main-header></main-header>
+          <main-header @foldChange="handleFoldChange"></main-header>
         </el-header>
         <el-main> <router-view></router-view></el-main>
       </el-container>
@@ -16,6 +16,7 @@
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { localCache } from '@/utils'
 import { LOGIN_TOKEN } from '@/global'
@@ -24,9 +25,10 @@ import MainMenu from '@/components/main-menu'
 import MainHeader from '@/components/main-header'
 
 const router = useRouter()
-const changeCounter = () => {
-  localCache.removeCache(LOGIN_TOKEN)
-  router.push('/login')
+
+const isFold = ref(false)
+const handleFoldChange = () => {
+  isFold.value = !isFold.value
 }
 </script>
 

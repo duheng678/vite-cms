@@ -45,6 +45,10 @@ const userMenus = loginStore.userMenus
 defineProps({
   isFold: { type: Boolean, default: false },
 })
+const handleItemClick = (item: any) => {
+  console.log(item)
+  const url = item.url
+}
 </script>
 
 <style scoped lang="less">

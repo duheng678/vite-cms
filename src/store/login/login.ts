@@ -40,13 +40,14 @@ const useLoginStore = defineStore('login', {
       // 请求用户信息
       const userInfo = await getUserInfoById(Number(this.id))
       console.log(userInfo)
-      this.userInfo = userInfo
-      localCache.setCache('userInfo', userInfo)
+      this.userInfo = userInfo.data
+      localCache.setCache('userInfo', this.userInfo)
 
       // 请求用户菜单
       const userMenus = await getUserMenusByRoleId(this.userInfo.role.id)
-      this.userMenus = userMenus
-      localCache.setCache('userMenus', userMenus)
+      this.userMenus = userMenus.data
+      localCache.setCache('userMenus', this.userMenus)
+      console.log(userMenus)
 
       // 跳转路由
       router.push('/')
