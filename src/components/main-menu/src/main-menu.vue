@@ -39,15 +39,25 @@
 </template>
 
 <script setup lang="ts">
+import { useRoute, useRouter } from 'vue-router'
+import { computed } from 'vue'
 import useLoginStore from '@/store/login/login'
+import { mapPathToMenu } from '@/utils'
+const router = useRouter()
 const loginStore = useLoginStore()
 const userMenus = loginStore.userMenus
 defineProps({
   isFold: { type: Boolean, default: false },
 })
+const route = useRoute()
+const defaultActive = computed(() => {
+  const menu = mapPathToMenu(route.path, userMenus)
+  return menu.id + ''
+})
 const handleItemClick = (item: any) => {
   console.log(item)
   const url = item.url
+  router.push(url)
 }
 </script>
 

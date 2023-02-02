@@ -4,9 +4,10 @@ import useLoginStore from './login/login'
 
 const pinia = createPinia()
 
-export default function registerStore(app: App) {
+function registerStore(app: App) {
   app.use(pinia)
 
   const loginStore = useLoginStore()
   loginStore.loadLocalCacheAction()
 }
+export default registerStore

@@ -1,9 +1,9 @@
 import { defineStore } from 'pinia'
 import { accountLoginRequest, getUserInfoById, getUserMenusByRoleId } from '@/service/login/login'
 import type { IAccount } from '@/types'
-import { localCache } from '@/utils/cache'
 import router from '@/router'
 import { LOGIN_TOKEN } from '@/global'
+import { mapMenusToRoutes, localCache } from '@/utils'
 const USER_NAME = 'user/name'
 
 interface ILoginState {
@@ -17,10 +17,10 @@ interface ILoginState {
 const useLoginStore = defineStore('login', {
   state: (): ILoginState => ({
     id: '',
-    name: localCache.getCache(USER_NAME) ?? '',
-    token: localCache.getCache(LOGIN_TOKEN) ?? '',
-    userInfo: localCache.getCache('userInfo') ?? {},
-    userMenus: localCache.getCache('userMenus') ?? {},
+    name: '',
+    token: '',
+    userInfo: {},
+    userMenus: {},
   }),
   getters: {},
   actions: {
@@ -49,6 +49,11 @@ const useLoginStore = defineStore('login', {
       localCache.setCache('userMenus', this.userMenus)
       console.log(userMenus)
 
+      const routes = mapMenusToRoutes(userMenus.data)
+
+      routes.forEach((item) => {
+        router.addRoute('main', item)
+      })
       // 跳转路由
       router.push('/')
     },
@@ -63,6 +68,12 @@ const useLoginStore = defineStore('login', {
         this.token = token
         this.userInfo = userInfo
         this.userMenus = userMenus
+      }
+      if (userMenus) {
+        const routes = mapMenusToRoutes(userMenus)
+        routes.forEach((item) => {
+          router.addRoute('main', item)
+        })
       }
     },
   },

@@ -1,5 +1,5 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
-import { localCache } from '@/utils'
+import { firstMenu, localCache } from '@/utils'
 import { LOGIN_TOKEN } from '@/global'
 const router = createRouter({
   history: createWebHashHistory(import.meta.env.BASE_URL),
@@ -28,6 +28,10 @@ router.beforeEach((to) => {
   const token = localCache.getCache(LOGIN_TOKEN)
   if (to.path.startsWith('/main') && !token) {
     if (!token) return '/login'
+  }
+
+  if (to.path === '/main') {
+    return firstMenu.url
   }
 })
 
