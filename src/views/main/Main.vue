@@ -36,7 +36,9 @@ const handleFoldChange = () => {
 .main {
   height: 100%;
 }
-
+// :global(.el-main) {
+//   padding: 0;
+// }
 .main-content {
   height: 100%;
 
