@@ -4,6 +4,7 @@ import type { IAccount } from '@/types'
 import router from '@/router'
 import { LOGIN_TOKEN } from '@/global'
 import { mapMenusToRoutes, localCache } from '@/utils'
+import useMainStore from '../main/main'
 const USER_NAME = 'user/name'
 
 interface ILoginState {
@@ -49,11 +50,15 @@ const useLoginStore = defineStore('login', {
       localCache.setCache('userMenus', this.userMenus)
       console.log(userMenus)
 
+      // 动态路由
       const routes = mapMenusToRoutes(userMenus.data)
-
       routes.forEach((item) => {
         router.addRoute('main', item)
       })
+      // 获取角色
+      // 5.请求所有roles/departments数据
+      const mainStore = useMainStore()
+      mainStore.fetchEntireDataAction()
       // 跳转路由
       router.push('/')
     },
@@ -68,12 +73,13 @@ const useLoginStore = defineStore('login', {
         this.token = token
         this.userInfo = userInfo
         this.userMenus = userMenus
-      }
-      if (userMenus) {
+        // 1..请求所有roles/departments数据
+        const mainStore = useMainStore()
+        mainStore.fetchEntireDataAction()
+
+        // 3.动态添加路由
         const routes = mapMenusToRoutes(userMenus)
-        routes.forEach((item) => {
-          router.addRoute('main', item)
-        })
+        routes.forEach((route) => router.addRoute('main', route))
       }
     },
   },
