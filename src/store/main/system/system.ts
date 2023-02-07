@@ -1,10 +1,22 @@
-import { postUserListData, deleteUserById, newUserData, editUserData } from '@/service/main/system/system'
+import {
+  postUserListData,
+  deleteUserById,
+  newUserData,
+  editUserData,
+  postPageListData,
+  deletePageById,
+  newPageData,
+  editPageData,
+} from '@/service/main/system/system'
 import { defineStore } from 'pinia'
+import useMainStore from '../main'
 import type { ISystemState } from './type'
 const userSystemStore = defineStore('system', {
   state: (): ISystemState => ({
     userList: [],
     userTotalCount: 0,
+    pageList: [],
+    pageTotalCount: 0,
   }),
   actions: {
     async postUserListAction(queryInfo: any) {
@@ -34,6 +46,43 @@ const userSystemStore = defineStore('system', {
 
       // 2.重新请求新的数据
       this.postUserListAction({ offset: 0, size: 10 })
+    },
+
+    /** 针对页面的数据: 增删改查 */
+    async postPageListAction(pageName: string, queryInfo: any) {
+      const pageListResult = await postPageListData(pageName, queryInfo)
+      const { totalCount, list } = pageListResult.data
+      console.log(pageListResult)
+
+      this.pageList = list
+      this.pageTotalCount = totalCount
+    },
+    async deletePageByIdAction(pageName: string, id: number) {
+      const deleteResult = await deletePageById(pageName, id)
+      console.log(deleteResult)
+      this.postPageListAction(pageName, { offset: 0, size: 10 })
+
+      // 获取完整的数据
+      const mainStore = useMainStore()
+      mainStore.fetchEntireDataAction()
+    },
+    async newPageDataAction(pageName: string, pageInfo: any) {
+      const newResult = await newPageData(pageName, pageInfo)
+      console.log(newResult)
+      this.postPageListAction(pageName, { offset: 0, size: 10 })
+
+      // 获取完整的数据
+      const mainStore = useMainStore()
+      mainStore.fetchEntireDataAction()
+    },
+    async editPageDataAction(pageName: string, id: number, pageInfo: any) {
+      const editResult = await editPageData(pageName, id, pageInfo)
+      console.log(editResult)
+      this.postPageListAction(pageName, { offset: 0, size: 10 })
+
+      // 获取完整的数据
+      const mainStore = useMainStore()
+      mainStore.fetchEntireDataAction()
     },
   },
 })

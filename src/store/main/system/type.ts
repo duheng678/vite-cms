@@ -13,4 +13,6 @@ interface IRoot {
 export interface ISystemState {
   userList: IRoot[]
   userTotalCount: number
+  pageList: any
+  pageTotalCount: number
 }
