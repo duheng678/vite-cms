@@ -12,7 +12,7 @@
       @edit-click="handleEditClick"
       ><template #leader="scope"> {{ scope.row[scope.prop] }} </template>
     </page-content>
-    <page-dialog :modal-config="modalConfig" ref="dialogRef"></page-dialog>
+    <page-dialog :modal-config="modalConfigRef" ref="dialogRef"></page-dialog>
   </div>
 </template>
 
@@ -23,22 +23,23 @@ import pageDialog from '@/components/page-dialog/page-dialog.vue'
 import searchConfig from './config/search.config'
 import contentConfig from './config/content.config'
 import modalConfig from './config/modal.config'
-import { ref } from 'vue'
-const contentRef = ref<InstanceType<typeof pageContent>>()
-const handleQueryClick = (queryInfo = {}) => {
-  contentRef.value?.fetchPageListData(queryInfo)
-}
-const handleResetClick = () => {
-  contentRef.value?.fetchPageListData()
-}
+import { ref, computed } from 'vue'
+import useMainStore from '@/store/main/main'
+import usePageContent from '@/hooks/usePageContent'
+import usePageModal from '@/hooks/usePageModal'
+const { contentRef, handleQueryClick, handleResetClick } = usePageContent()
+const { dialogRef, handleEditClick, handleNewClick } = usePageModal()
 
-const dialogRef = ref<InstanceType<typeof pageDialog>>()
-const handleNewClick = () => {
-  dialogRef.value?.setModalVisible()
-}
-const handleEditClick = (queryInfo: any) => {
-  dialogRef.value?.setModalVisible(false, queryInfo)
-}
+const mainStore = useMainStore()
+const modalConfigRef = computed(() => {
+  const departments = mainStore.entireDepartments.map((item) => ({ label: item.name, value: item.id }))
+  modalConfig.formItems.forEach((item) => {
+    if (item.prop === 'parentId') {
+      item.options.push(...departments)
+    }
+  })
+  return modalConfig
+})
 </script>
 
 <style scoped>

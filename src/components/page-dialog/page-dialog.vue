@@ -28,6 +28,7 @@
                   start-placeholder="开始时间"
                   end-placeholder="结束时间"
               /></template>
+              <template v-if="item.type === 'custom'"> <slot :name="item.slotName"></slot></template>
             </el-form-item>
           </template>
         </el-form>
@@ -50,6 +51,7 @@ import useSystemStore from '@/store/main/system/system'
 import type { IModalConfig } from './type'
 interface IProps {
   modalConfig: IModalConfig
+  otherInfo?: any
 }
 const props = defineProps<IProps>()
 // 1.定义内部的属性
@@ -70,6 +72,8 @@ const { entireDepartments } = storeToRefs(mainStore)
 
 // 2.定义设置dialogVisible方法
 function setModalVisible(isNew: boolean = true, itemData?: any) {
+  console.log(itemData)
+
   dialogVisible.value = true
   isNewRef.value = isNew
   if (!isNew && itemData) {
@@ -93,14 +97,18 @@ function setModalVisible(isNew: boolean = true, itemData?: any) {
 // 3.点击了确定的逻辑
 function handleConfirmClick() {
   dialogVisible.value = false
+  let infoData = formData
+  if (props.otherInfo) {
+    infoData = { ...formData, ...props.otherInfo }
+  }
   if (!isNewRef.value && editData.value) {
     // 编辑用户的数据
-    systemStore.editPageDataAction(props.modalConfig.pageName, editData.value.id, formData).then((res) => {
+    systemStore.editPageDataAction(props.modalConfig.pageName, editData.value.id, infoData).then((res) => {
       console.log('h')
     })
   } else {
     // 创建新的用户
-    systemStore.newPageDataAction(props.modalConfig.pageName, formData)
+    systemStore.newPageDataAction(props.modalConfig.pageName, infoData)
   }
 }
 
