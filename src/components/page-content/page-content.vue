@@ -2,7 +2,9 @@
   <div class="content">
     <div class="header">
       <h3 class="title">{{ contentConfig?.header?.title ?? '数据列表' }}</h3>
-      <el-button type="primary" @click="handleNewUserClick">{{ contentConfig?.header?.btnTitle ?? '新建' }}</el-button>
+      <el-button v-if="isCreate" type="primary" @click="handleNewUserClick">{{
+        contentConfig?.header?.btnTitle ?? '新建'
+      }}</el-button>
     </div>
     <div class="table">
       <el-table :data="pageList" style="width: 100%" v-bind="contentConfig.childrenTree">
@@ -17,10 +19,24 @@
           <template v-else-if="item.type === 'handler'">
             <el-table-column v-bind="item">
               <template #default="scope">
-                <el-button size="small" icon="Edit" type="primary" text @click="handleEditBtnClick(scope.row)">
+                <el-button
+                  v-if="isUpdate"
+                  size="small"
+                  icon="Edit"
+                  type="primary"
+                  text
+                  @click="handleEditBtnClick(scope.row)"
+                >
                   编辑
                 </el-button>
-                <el-button size="small" icon="Delete" type="danger" text @click="handleDeleteBtnClick(scope.row.id)">
+                <el-button
+                  v-if="isDelete"
+                  size="small"
+                  icon="Delete"
+                  type="danger"
+                  text
+                  @click="handleDeleteBtnClick(scope.row.id)"
+                >
                   删除
                 </el-button>
               </template>
@@ -55,6 +71,8 @@
 
 <script setup lang="ts">
 import useSystemStore from '@/store/main/system/system'
+import useLoginStore from '@/store/login/login'
+import usePermission from '@/hooks/usePermission'
 import { storeToRefs } from 'pinia'
 import { ref } from 'vue'
 import { formatUTC } from '@/utils'
@@ -72,11 +90,21 @@ interface IProps {
 // 定义事件
 const emit = defineEmits(['newClick', 'editClick'])
 const props = defineProps<IProps>()
+// 0.判断是否有增删改查的权限
+const isCreate = usePermission(props.contentConfig.pageName, 'create')
+const isDelete = usePermission(props.contentConfig.pageName, 'delete')
+const isUpdate = usePermission(props.contentConfig.pageName, 'update')
+const isQuery = usePermission(props.contentConfig.pageName, 'query')
+console.log(isQuery)
+
 // 1.发起action，请求usersList的数据
 const systemStore = useSystemStore()
+const loginStore = useLoginStore()
 
 // 2.获取usersList数据,进行展示
 const { pageList, pageTotalCount } = storeToRefs(systemStore)
+const { permissions } = storeToRefs(loginStore)
+console.log(permissions)
 
 // 3.页码相关的逻辑
 const currentPage = ref(1)
@@ -91,6 +119,7 @@ const handleCurrentChange = () => {
 
 // 4.定义函数, 用于发送网络请求
 const fetchPageListData = (formData = {}) => {
+  if (!isQuery) return
   const size = pageSize.value
   const offset = (currentPage.value - 1) * size
 
@@ -108,10 +137,20 @@ const handleEditBtnClick = (val: any) => {
 }
 const handleDeleteBtnClick = (id: number) => {
   systemStore.deletePageByIdAction(props.contentConfig.pageName, id)
+  currentPage.value = 1
+  pageSize.value = 10
 }
 const handleNewUserClick = () => {
   emit('newClick')
 }
+systemStore.$onAction((arg) => {
+  arg.after(() => {
+    if (arg.name === 'editPageDataAction' || arg.name === 'newPageDataAction') {
+      currentPage.value = 1
+      pageSize.value = 10
+    }
+  })
+})
 
 defineExpose({ fetchPageListData })
 </script>

@@ -2,6 +2,7 @@
   <div class="modal">
     <el-dialog
       v-model="dialogVisible"
+      destroy-on-close
       :title="isNewRef ? modalConfig.header.newTitle : modalConfig.header.editTitle"
       width="30%"
       center
@@ -103,9 +104,7 @@ function handleConfirmClick() {
   }
   if (!isNewRef.value && editData.value) {
     // 编辑用户的数据
-    systemStore.editPageDataAction(props.modalConfig.pageName, editData.value.id, infoData).then((res) => {
-      console.log('h')
-    })
+    systemStore.editPageDataAction(props.modalConfig.pageName, editData.value.id, infoData)
   } else {
     // 创建新的用户
     systemStore.newPageDataAction(props.modalConfig.pageName, infoData)

@@ -3,7 +3,7 @@ import { accountLoginRequest, getUserInfoById, getUserMenusByRoleId } from '@/se
 import type { IAccount } from '@/types'
 import router from '@/router'
 import { LOGIN_TOKEN } from '@/global'
-import { mapMenusToRoutes, localCache } from '@/utils'
+import { mapMenusToRoutes, localCache, mapMenuListToPermissions } from '@/utils'
 import useMainStore from '../main/main'
 const USER_NAME = 'user/name'
 
@@ -13,6 +13,7 @@ interface ILoginState {
   name: string
   userInfo: any
   userMenus: any
+  permissions: string[]
 }
 
 const useLoginStore = defineStore('login', {
@@ -22,6 +23,7 @@ const useLoginStore = defineStore('login', {
     token: '',
     userInfo: {},
     userMenus: {},
+    permissions: [],
   }),
   getters: {},
   actions: {
@@ -48,7 +50,11 @@ const useLoginStore = defineStore('login', {
       const userMenus = await getUserMenusByRoleId(this.userInfo.role.id)
       this.userMenus = userMenus.data
       localCache.setCache('userMenus', this.userMenus)
-      console.log(userMenus)
+
+      // 获取权限
+      const permissions: string[] = mapMenuListToPermissions(this.userMenus)
+
+      this.permissions = permissions
 
       // 动态路由
       const routes = mapMenusToRoutes(userMenus.data)
@@ -73,10 +79,14 @@ const useLoginStore = defineStore('login', {
         this.token = token
         this.userInfo = userInfo
         this.userMenus = userMenus
+
         // 1..请求所有roles/departments数据
         const mainStore = useMainStore()
         mainStore.fetchEntireDataAction()
 
+        // 2. 获取按钮权限
+        const permissions: string[] = mapMenuListToPermissions(userMenus)
+        this.permissions = permissions
         // 3.动态添加路由
         const routes = mapMenusToRoutes(userMenus)
         routes.forEach((route) => router.addRoute('main', route))
